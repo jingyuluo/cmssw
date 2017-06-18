@@ -38,8 +38,9 @@ class CorrPCCProducer : public edm::one::EDProducer<edm::EndRunProducer,edm::one
 
   private:
     void MakeCorrectionTemplate ();
-    float GetMaximum(std::vector<float>&);
-    std::pair< float, std::vector<float>> CalculateCorrections (std::vector<float> &);
+    float GetMaximum(std::vector<float>);
+    void EstimateType1Frac(std::vector<float>, float& );
+    void CalculateCorrections (std::vector<float>, std::vector<float>&, float&);
     std::vector<float>& MakeCorrections (std::vector<float>&);
     virtual void beginRun(edm::Run const& runSeg, const edm::EventSetup& iSetup) override final;
     virtual void beginLuminosityBlock(edm::LuminosityBlock const& lumiSeg, const edm::EventSetup& iSetup);
@@ -59,7 +60,7 @@ class CorrPCCProducer : public edm::one::EDProducer<edm::EndRunProducer,edm::one
     std::vector<float> errOnLumiByBX_;//standard error per bx
     std::vector<float> totalLumiByBX_;//summed lumi
     std::vector<float> correctionTemplate_;
-    std::vector<float> corrected_tmp_;
+    //std::vector<float> corrected_tmp_;
     std::vector<float> correctionList_;//list of scale factors to apply.
     float totalLumi_;//The total raw luminosity from the pixel clusters - not scaled
     float statErrOnLumi_;//the statistical error on the lumi - large num ie sqrt(N)
@@ -96,10 +97,10 @@ CorrPCCProducer::CorrPCCProducer(const edm::ParameterSet& iConfig)
   
     //Initialization of Temparory Corrected PCC
      
-    for (size_t bx=0; bx<LumiConstants::numBX; bx++){
-        corrected_tmp_.push_back(0);    
+    //for (size_t bx=0; bx<LumiConstants::numBX; bx++){
+    //    corrected_tmp_.push_back(0);    
    
-    } 
+    //} 
     //Generate a pseudo correction list:Add function to created list here?
     for(unsigned int bx=0;bx<LumiConstants::numBX;bx++){
         correctionList_.push_back(1.0);
@@ -136,7 +137,7 @@ void  CorrPCCProducer::MakeCorrectionTemplate (){
 
 }
 
-float CorrPCCProducer::GetMaximum(std::vector<float>& lumi_vector){
+float CorrPCCProducer::GetMaximum(std::vector<float> lumi_vector){
     float max_lumi=0;
     for(size_t i=0; i<lumi_vector.size(); i++){
         if(lumi_vector.at(i)>max_lumi)  max_lumi = lumi_vector.at(i);
@@ -144,12 +145,13 @@ float CorrPCCProducer::GetMaximum(std::vector<float>& lumi_vector){
     return max_lumi;
 }
 
-std::pair<float, std::vector<float> > CorrPCCProducer::CalculateCorrections (std::vector<float> &uncorrected){
 
-    //Find the abort gap and calculate the noise
-    //std::vector<float> corrected_tmp_;
+
+void CorrPCCProducer::EstimateType1Frac(std::vector<float> uncorrPCCPerBX, float &type1Frac){
+    
+    std::vector<float> corrected_tmp_; 
     for(size_t i=0; i<corrected_tmp_.size(); i++){
-        corrected_tmp_.at(i)=uncorrected.at(i);
+        corrected_tmp_.push_back(uncorrPCCPerBX.at(i));
     }
     bool gap=false;
     int idl=0;
@@ -165,7 +167,7 @@ std::pair<float, std::vector<float> > CorrPCCProducer::CalculateCorrections (std
         }
 
     }
-  
+
     if(idl!=0){
         noise=noise/idl;
     }
@@ -174,11 +176,12 @@ std::pair<float, std::vector<float> > CorrPCCProducer::CalculateCorrections (std
         noise=0;
 
     }
+   
 
     //Apply initial type 1 correction
    for(size_t k=0;k<LumiConstants::numBX-1; k++){ 
        float bin_k = corrected_tmp_.at(k);
-       corrected_tmp_.at(k+1)=corrected_tmp_.at(k+1)-type1_*bin_k;
+       corrected_tmp_.at(k+1)=corrected_tmp_.at(k+1)-type1Frac*bin_k;
   
    }
  
@@ -220,12 +223,77 @@ std::pair<float, std::vector<float> > CorrPCCProducer::CalculateCorrections (std
     } 
   
     mean_type1 = mean_type1/nTrain;
+
+    type1Frac+=mean_type1;
+
+}
+
+void CorrPCCProducer::CalculateCorrections (std::vector<float> uncorrected, std::vector<float>& corr_list_, float& Overall_corr){
+
+    float type1frac = 0;
+    EstimateType1Frac(uncorrected, type1frac);
+    std::cout<<type1frac<<std::endl;
+    EstimateType1Frac(uncorrected, type1frac);
+    std::cout<<type1frac<<std::endl;
+
+    //Find the abort gap and calculate the noise
+    //std::vector<float> corrected_tmp_;
+    std::vector<float> corrected_tmp_;
+    for(size_t i=0; i<corrected_tmp_.size(); i++){
+        corrected_tmp_.push_back(uncorrected.at(i));
+    }
+
+    //Apply initial type 1 correction
+   for(size_t k=0;k<LumiConstants::numBX-1; k++){ 
+       float bin_k = corrected_tmp_.at(k);
+       corrected_tmp_.at(k+1)=corrected_tmp_.at(k+1)-type1frac*bin_k;
   
-    for (size_t ibx=0; ibx<LumiConstants::numBX-1; ibx++){
-        float bin_i = corrected_tmp_.at(ibx);
-        corrected_tmp_.at(ibx+1) = corrected_tmp_.at(ibx+1)-bin_i*mean_type1;
+   }
+ 
+
+   //Apply type 2 correction
+   for(size_t i=0; i<LumiConstants::numBX-1; i++){
+       for(size_t j=i+1; j<i+LumiConstants::numBX-1; j++){
+           float bin_i = corrected_tmp_.at(i);
+           if (j<LumiConstants::numBX){
+               corrected_tmp_.at(j)=corrected_tmp_.at(j)-bin_i*correctionTemplate_.at(j-i);
+           } 
+           
+           else{
+               corrected_tmp_.at(j-LumiConstants::numBX) = corrected_tmp_.at(j-LumiConstants::numBX)-bin_i*correctionTemplate_.at(j-i);
+           }
+       }
 
     }
+  
+    //Apply additional iteration for type 1 correction
+    float lumiMax = GetMaximum(corrected_tmp_);
+    float threshold = lumiMax*0.2;  //need to be changed to GetMaximum()*0.2
+   
+    //float mean_type1 = 0;  //Calculate the mean value of the type 1 residual 
+    //int nTrain = 0;
+    //for(size_t ibx=2; ibx<LumiConstants::numBX-5; ibx++){
+    //    //float lumiM1 = corrected_tmp_.at(ibx-1);
+    //    float lumi   = corrected_tmp_.at(ibx);
+    //    float lumiP1 = corrected_tmp_.at(ibx+1);
+    //    float lumiP2 = corrected_tmp_.at(ibx+2);
+    //    float lumiP3 = corrected_tmp_.at(ibx+3);
+    //    float lumiP4 = corrected_tmp_.at(ibx+4);
+    //    float lumiP5 = corrected_tmp_.at(ibx+5);
+   
+    //    if(lumi>threshold && lumiP1<threshold && lumiP2<threshold){
+    //        mean_type1+=(lumiP1-(lumiP3+lumiP4+lumiP5)/3)/lumi;
+    //        nTrain+=1;
+    //    }
+    //} 
+  
+    //mean_type1 = mean_type1/nTrain;
+  
+    //for (size_t ibx=0; ibx<LumiConstants::numBX-1; ibx++){
+    //    float bin_i = corrected_tmp_.at(ibx);
+    //    corrected_tmp_.at(ibx+1) = corrected_tmp_.at(ibx+1)-bin_i*mean_type1;
+
+    //}
    
    float Integral_Uncorr=0;
    float Integral_Corr = 0;
@@ -236,12 +304,13 @@ std::pair<float, std::vector<float> > CorrPCCProducer::CalculateCorrections (std
            Integral_Corr+=corrected_tmp_.at(ibx);
        }
        
-       corrected_tmp_.at(ibx) = corrected_tmp_.at(ibx)/uncorrected.at(ibx);
+       corr_list_.at(ibx) = corrected_tmp_.at(ibx)/uncorrected.at(ibx);
 
    }
-    
-   std::pair <float, std::vector<float>> corr_pair_ = std::make_pair(Integral_Corr/Integral_Uncorr, corrected_tmp_); 
-   return corr_pair_;
+ 
+   Overall_corr = Integral_Corr/Integral_Uncorr;  
+   //std::pair <float, std::vector<float>> corr_pair_ = std::make_pair(Integral_Corr/Integral_Uncorr, corrected_tmp_); 
+   //return corr_pair_;
 }
 
 //--------------------------------------------------------------------------------------------------
