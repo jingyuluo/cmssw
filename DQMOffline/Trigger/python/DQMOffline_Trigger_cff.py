@@ -125,7 +125,7 @@ OfflineHLTMonitoring = cms.Sequence(
     sipixelMonitorHLTsequence * # pixel
     BTVHLTOfflineSource *
     trackingMonitorHLT * # tracking
-    trackingMonitorHLTiter4 * # Iter4 Tracking
+    trackingMonitorHLTDisplacedJet* #DisplacedJet Tracking 
     egmTrackingMonitorHLT * # egm tracking
     vertexingMonitorHLT # vertexing
     )
