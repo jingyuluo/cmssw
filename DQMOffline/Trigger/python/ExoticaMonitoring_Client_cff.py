@@ -180,7 +180,7 @@ from DQM.TrackingMonitorClient.TrackingEffFromHitPatternClientConfig_cff import 
 trackingforDisplacedJetEffFromHitPatternHLT = trackingEffFromHitPattern.clone()
 trackingforDisplacedJetEffFromHitPatternHLT.subDirs = cms.untracked.vstring(
     "HLT/EXO/DisplacedJet/Tracking/iter2MergedForBTag/HitEffFromHitPattern*",
-    "HLT/EXO/DisplacedJet/Tracking/iter4ForDispalced/HitEffFromHitPattern*",
+    "HLT/EXO/DisplacedJet/Tracking/iter4ForDisplaced/HitEffFromHitPattern*",
 )
 
 trackingForDisplacedJetMonitorClientHLT  = cms.Sequence(
