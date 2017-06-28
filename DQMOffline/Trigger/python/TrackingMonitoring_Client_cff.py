@@ -15,16 +15,6 @@ trackingMonitorClientHLT = cms.Sequence(
 )
 
 
-#DisplacedJet Monitoring
-trackingforDisplacedJetEffFromHitPatternHLT = trackingEffFromHitPattern.clone()
-trackingforDisplacedJetEffFromHitPatternHLT.subDirs = cms.untracked.vstring(
-    "HLT/Tracking/iter2MergedForBTag/HitEffFromHitPattern*",
-    "HLT/Tracking/iter4ForDispalced/HitEffFromHitPattern*",
-)
-
-trackingForDisplacedJetMonitorClientHLT  = cms.Sequence( 
-    trackingforDisplacedJetEffFromHitPatternHLT
-)
 #trackingForIter4EffFromHitPatternHLT = trackingEffFromHitPattern.clone()
 #trackingForIter4EffFromHitPatternHLT.subDirs = cms.untracked.vstring(
 #   "HLT/Tracking/iter4Merged/HitEffFromHitPattern*"

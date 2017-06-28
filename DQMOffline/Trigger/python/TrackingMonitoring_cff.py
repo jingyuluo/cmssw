@@ -68,15 +68,6 @@ iter4TracksMonitoringHLT.FolderName       = 'HLT/Tracking/iter4Merged'
 iter4TracksMonitoringHLT.TrackProducer    = 'hltIter4Merged'
 iter4TracksMonitoringHLT.allTrackProducer = 'hltIter4Merged'
 
-DisplacedJetIter2TracksMonitoringHLT = trackingMonHLT.clone()
-DisplacedJetIter2TracksMonitoringHLT.FolderName       = 'HLT/Tracking/iter2MergedForBTag'
-DisplacedJetIter2TracksMonitoringHLT.TrackProducer    = 'hltIter2MergedForBTag'
-DisplacedJetIter2TracksMonitoringHLT.allTrackProducer = 'hltIter2MergedForBTag'
-
-DisplacedJetIter4TracksMonitoringHLT = trackingMonHLT.clone()
-DisplacedJetIter2TracksMonitoringHLT.FolderName       = 'HLT/Tracking/iter4ForDispalced'
-DisplacedJetIter4TracksMonitoringHLT.TrackProducer    = 'hltDisplacedhltIter4PFlowTrackSelectionHighPurity'
-DisplacedJetIter4TracksMonitoringHLT.allTrackProducer = 'hltDisplacedhltIter4PFlowTrackSelectionHighPurity'
 
 trackingMonitorHLT = cms.Sequence(
     pixelTracksMonitoringHLT
@@ -99,11 +90,6 @@ trackingMonitorHLTall = cms.Sequence(
 #    + iter4TracksMonitoringHLT
 )   
 
-
-trackingMonitorHLTDisplacedJet = cms.Sequence(
-     DisplacedJetIter2TracksMonitoringHLT
-    +DisplacedJetIter4TracksMonitoringHLT
-)
 
 
 
