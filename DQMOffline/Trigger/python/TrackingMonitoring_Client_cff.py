@@ -14,6 +14,17 @@ trackingMonitorClientHLT = cms.Sequence(
     trackingEffFromHitPatternHLT
 )
 
+
+#iter4 Monitoring
+trackingForIter4EffFromHitPatternHLT = trackingEffFromHitPattern.clone()
+trackingForIter4EffFromHitPatternHLT.subDirs = cms.untracked.vstring(
+   "HLT/Tracking/iter4Merged/HitEffFromHitPattern*"
+) 
+
+trackingIter4MonitorClientHLT = cms.Sequence(
+    trackingForIter4EffFromHitPatternHLT
+)
+
 # EGM tracking
 trackingForElectronsEffFromHitPatternHLT = trackingEffFromHitPattern.clone()
 trackingForElectronsEffFromHitPatternHLT.subDirs = cms.untracked.vstring(

@@ -87,7 +87,13 @@ trackingMonitorHLTall = cms.Sequence(
     + iterHLTTracksMonitoringHLT
 #    + iter3TracksMonitoringHLT
 #    + iter4TracksMonitoringHLT
-)    
+)   
+
+trackingMonitorHLTiter4 = cms.Sequence(
+     iter4TracksMonitoringHLT
+) 
+
+
 
 ############
 #### EGM tracks
