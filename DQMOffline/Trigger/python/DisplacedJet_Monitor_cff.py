@@ -3,24 +3,7 @@ import FWCore.ParameterSet.Config as cms
 from DQMOffline.Trigger.HTMonitor_cfi import hltHTmonitoring
 from DQMOffline.Trigger.JetMonitor_cfi import hltJetMETmonitoring
 
-import DQM.TrackingMonitor.TrackerCollisionTrackingMonitor_cfi
-trackingMonHLT = DQM.TrackingMonitor.TrackerCollisionTrackingMonitor_cfi.TrackerCollisionTrackMon.clone()
-trackingMonHLT.beamSpot                = cms.InputTag("hltOnlineBeamSpot")
-trackingMonHLT.primaryVertex           = cms.InputTag("hltPixelVertices")
-trackingMonHLT.doAllPlots              = cms.bool(False)
-trackingMonHLT.doLumiAnalysis          = cms.bool(False)
-trackingMonHLT.doProfilesVsLS          = cms.bool(True)
-trackingMonHLT.doDCAPlots              = cms.bool(True)
-trackingMonHLT.pvNDOF                  = cms.int32(1)
-trackingMonHLT.doProfilesVsLS          = cms.bool(True)
-trackingMonHLT.doPlotsVsGoodPVtx       = cms.bool(True)
-trackingMonHLT.doEffFromHitPatternVsPU = cms.bool(True)
-trackingMonHLT.doEffFromHitPatternVsBX = cms.bool(True)
-trackingMonHLT.doEffFromHitPatternVsLUMI = cms.bool(True)
-trackingMonHLT.doPlotsVsGoodPVtx       = cms.bool(True)
-trackingMonHLT.doPlotsVsLUMI           = cms.bool(True)
-trackingMonHLT.doPlotsVsBX             = cms.bool(True)
-
+from DQMOffline.Trigger.TrackingMonitoringcff import * 
 
 DisplacedJetIter2TracksMonitoringHLT = trackingMonHLT.clone()
 DisplacedJetIter2TracksMonitoringHLT.FolderName       = 'HLT/EXO/DisplacedJet/Tracking/iter2MergedForBTag'
